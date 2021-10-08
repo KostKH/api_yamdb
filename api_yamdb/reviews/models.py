@@ -24,6 +24,36 @@ class User(AbstractUser):
         ordering = ['-id']
 
 
+
+class Genre(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Categories(models.Model):
+    name = models.CharField(max_length=200)
+    slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
+
+
+class Titles(models.Model):
+    name = models.CharField(max_length=200)
+    year = models.IntegerField(max_length=4)
+    genres = models.ManyToManyField("Genre", related_name="titles")
+    categories = models.ManyToManyField("Categories",
+                                        related_name="titles")
+
+    class Meta:
+        ordering = ["year"]
+
+    def __str__(self):
+        return self.name
+
 class Review(models.Model):
     author = models.ForeignKey(
         User,
@@ -64,3 +94,4 @@ class Comments(models.Model):
     text = models.TextField(
         verbose_name='текст коментария',
         help_text='добавьте коментарий')
+
