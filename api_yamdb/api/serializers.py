@@ -2,26 +2,32 @@ from rest_framework import serializers
 from reviews.models import Genre, Categories, Titles, User, UserCode
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
+from statistics import mean
+
 
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Genre
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class CategoriesSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Categories
-        fields = '__all__'
+        fields = ('name', 'slug')
 
 
 class TitlesSerializer(serializers.ModelSerializer):
+    rating = serializers.SerializerMethodField()
 
     class Meta:
         model = Titles
         fields = '__all__'
+
+    def get_rating(self, obj):
+        return mean(obj.review.score)
 
 
 class SignupSerializer(serializers.ModelSerializer):
