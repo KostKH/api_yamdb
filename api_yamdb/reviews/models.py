@@ -1,6 +1,7 @@
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
+
 from django.utils.translation import gettext_lazy as _
 
 
@@ -20,7 +21,6 @@ class User(AbstractUser):
         default=USER,
         max_length=9
     )
-
     email = models.EmailField(_('email address'), blank=False, unique=True, max_length=254)
     first_name = models.CharField(_('first name'), max_length=150, blank=True)
     bio = models.TextField(blank=True, null=True)
@@ -30,7 +30,6 @@ class User(AbstractUser):
     
     def __str__(self):
         return self.email
-
 
 
 class Genre(models.Model):
@@ -51,7 +50,7 @@ class Categories(models.Model):
 
 class Titles(models.Model):
     name = models.CharField(max_length=200)
-    year = models.IntegerField() #max_length=4
+    year = models.IntegerField()
     genres = models.ManyToManyField("Genre", related_name="titles")
     categories = models.ManyToManyField("Categories",
                                         related_name="titles")

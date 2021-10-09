@@ -1,20 +1,38 @@
+
 from django.core.mail import send_mail
 from django.shortcuts import render
 from django.utils.crypto import get_random_string
-from rest_framework import status
-from rest_framework.permissions import AllowAny
+from reviews.models import Genre, Categories, Titles, User, UserCode
+from rest_framework import filters, mixins, permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
-from reviews.models import User, UserCode
 
+from .permissions import IsAdminOrReadOnly
+from . import serializers
 from api_yamdb.settings import FROM_EMAIL
 
-from . import serializers
+
+class GenreViewSet(viewsets.ModelViewSet):
+    queryset = Genre.objects.all()
+    serializer_class = serializers.GenreSerializer
+    permission_classes = [IsAdminOrReadOnly, ]
+
+
+class CategoriesViewSet(viewsets.ModelViewSet):
+    queryset = Categories.objects.all()
+    serializer_class = serializers.CategoriesSerializer
+    permission_classes = [IsAdminOrReadOnly, ]
+
+
+class TitlesViewSet(viewsets.ModelViewSet):
+    queryset = Titles.objects.all()
+    serializer_class = serializers.TitlesSerializer
+    permission_classes = [IsAdminOrReadOnly, ]
 
 
 class APISignup(APIView):
-    permission_classes = (AllowAny,)
+    permission_classes = (permissions.AllowAny,)
     def post(self, request):
         serializer = serializers.SignupSerializer(data=request.data)
         if serializer.is_valid():
@@ -33,5 +51,5 @@ class APISignup(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class GetTokenView(TokenViewBase):
-    permission_classes = (AllowAny,)
+    permission_classes = (permissions.AllowAny,)
     serializer_class = serializers.GetTokenSerializer

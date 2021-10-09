@@ -1,7 +1,27 @@
-from django.shortcuts import get_object_or_404
 from rest_framework import serializers
+from reviews.models import Genre, Categories, Titles, User, UserCode
+from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
-from reviews.models import User, UserCode
+
+class GenreSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Genre
+        fields = '__all__'
+
+
+class CategoriesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Categories
+        fields = '__all__'
+
+
+class TitlesSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = Titles
+        fields = '__all__'
 
 
 class SignupSerializer(serializers.ModelSerializer):
@@ -37,3 +57,4 @@ class GetTokenSerializer(serializers.Serializer):
         
         token = self.get_token(user)
         return {'token': str(token.access_token),}
+
