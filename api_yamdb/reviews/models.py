@@ -1,4 +1,5 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MinValueValidator, MaxValueValidator
 from django.db import models
 from .managers import CustomUserManager
 from django.utils.translation import ugettext_lazy as _
@@ -42,6 +43,7 @@ class User(AbstractUser):
         ordering = ['-id']
 
 
+
 class Genre(models.Model):
     name = models.CharField(max_length=200)
     slug = models.SlugField(unique=True)
@@ -70,3 +72,45 @@ class Titles(models.Model):
 
     def __str__(self):
         return self.name
+
+class Review(models.Model):
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        verbose_name='author',
+        null=False)
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True)
+    score = models.PositiveIntegerField(
+        default=10,
+        validators=[MinValueValidator(1), MaxValueValidator(10)],
+        verbose_name='оценка')
+    title = models.ForeignKey(
+        "Titles",
+        blank=True,
+        null=True,
+        on_delete=models.SET_NULL)
+    text = models.TextField(
+        verbose_name='текст оценки',
+        help_text='оцените произвидение')
+
+
+class Comments(models.Model):
+    author = models.ForeignKey(
+        "User",
+        on_delete=models.CASCADE,
+        verbose_name='author',
+        null=False)
+    pub_date = models.DateTimeField(
+        verbose_name='Дата публикации',
+        auto_now_add=True)
+    review = models.ForeignKey(
+        "Review",
+        blank=True,
+        null=True,
+        on_delete=models.CASCADE)
+    text = models.TextField(
+        verbose_name='текст коментария',
+        help_text='добавьте коментарий')
+
