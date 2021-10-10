@@ -3,7 +3,7 @@ from reviews.models import Genre, Categories, Titles, User, UserCode
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 from statistics import mean
-
+import datetime as dt
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -21,14 +21,38 @@ class CategoriesSerializer(serializers.ModelSerializer):
 
 
 class TitlesSerializer(serializers.ModelSerializer):
-    rating = serializers.SerializerMethodField()
+    rating = serializers.SerializerMethodField
+    category = serializers.SlugRelatedField(
+        slug_field='slug', queryset=Categories.objects.all()
+    )
+    genres = serializers.SlugRelatedField(
+        slug_field='slug', many=True, queryset=Genre.objects.all()
+    )
 
     class Meta:
         model = Titles
-        fields = '__all__'
+        fields = ('name', 'year', 'description', 'category', 'genres',)
 
     def get_rating(self, obj):
         return mean(obj.review.score)
+
+    def validate_year(self, value):
+        current_year = dt.datetime.now().year
+        if 0 > value > current_year:
+            raise serializers.ValidationError(
+                'Год выпуска не может быть меньше 0 или больше текущего года!'
+            )
+        return value
+
+    def create(self, validated_data):
+        if 'genres' not in self.initial_data:
+            return Titles.objects.create(**validated_data)
+        else:
+            genres = validated_data.pop('genres')
+            title = Titles.objects.create(**validated_data)
+            #title.save()
+            title.genres.set([genres])
+            return title
 
 
 class SignupSerializer(serializers.ModelSerializer):
