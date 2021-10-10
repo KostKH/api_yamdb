@@ -5,6 +5,7 @@ from rest_framework_simplejwt.tokens import RefreshToken
 from statistics import mean
 
 
+
 class GenreSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -63,4 +64,12 @@ class GetTokenSerializer(serializers.Serializer):
         
         token = self.get_token(user)
         return {'token': str(token.access_token),}
+
+
+class UserSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+
 
