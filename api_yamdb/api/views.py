@@ -23,6 +23,17 @@ class GenreViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name',)
     search_fields = ('name',)
 
+    @action(
+        detail=False, methods=['delete'],
+        url_path=r'(?P<slug>\w+)',
+        lookup_field='slug', url_name='category_slug'
+    )
+    def get_genre(self, request, slug):
+        genre = self.get_object()
+        serializer = serializers.GenreSerializer(genre)
+        genre.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
+
     def get_permissions(self):
         if self.request.method == 'GET':
             return (ReadOnly(),)
@@ -39,6 +50,17 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     filterset_fields = ('name', 'slug')
     ordering_fields = ('name',)
     search_fields = ('name',)
+
+    @action(
+        detail=False, methods=['delete'],
+        url_path=r'(?P<slug>\w+)',
+        lookup_field='slug', url_name='category_slug'
+    )
+    def get_category(self, request, slug):
+        category = self.get_object()
+        serializer = serializers.CategoriesSerializer(category)
+        category.delete()
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def get_permissions(self):
         if self.request.method == 'GET':
@@ -71,8 +93,8 @@ class APISignup(APIView):
         serializer = serializers.SignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-    def send_code(self, user):
 
+    def send_code(self, user):
             email = user.email
             code = get_random_string(length=5)
             UserCode.objects.filter(user=user).update_or_create(user=user, code=code)

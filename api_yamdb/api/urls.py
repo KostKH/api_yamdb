@@ -15,5 +15,5 @@ router_v1.register('users', views.UserViewSet)
 urlpatterns = [
     path('v1/', include(router_v1.urls)),
     path('v1/auth/signup/', views.APISignup.as_view()),
-    path('v1/auth/token/', views.GetTokenView.as_view(), name='token'),
+    path('v1/auth/token/', views.GetTokenView.as_view(), name='token')
 ]
