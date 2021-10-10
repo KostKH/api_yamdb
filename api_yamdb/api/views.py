@@ -1,4 +1,3 @@
-
 from typing import KeysView
 from django.core.mail import send_mail
 from django.shortcuts import render
@@ -8,9 +7,9 @@ from rest_framework import filters, permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
+from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
-
-from .permissions import IsAdminOrReadOnly, IsAdmin
+from .permissions import ReadOnly, IsAdmin
 from . import serializers
 from api_yamdb.settings import FROM_EMAIL
 
@@ -18,24 +17,57 @@ from api_yamdb.settings import FROM_EMAIL
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = serializers.GenreSerializer
-    permission_classes = [IsAdminOrReadOnly, ]
+    permission_classes = [IsAdmin, ]
+    filter_backends = (DjangoFilterBackend,
+                       filters.OrderingFilter,
+                       filters.SearchFilter)
+    filterset_fields = ('name', 'slug')
+    ordering_fields = ('name',)
+    search_fields = ('name',)
 
 
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
     serializer_class = serializers.CategoriesSerializer
-    permission_classes = [IsAdminOrReadOnly, ]
+    permission_classes = [IsAdmin, ]
+    filter_backends = (DjangoFilterBackend,
+                       filters.OrderingFilter,
+                       filters.SearchFilter)
+    filterset_fields = ('name', 'slug')
+    ordering_fields = ('name',)
+    search_fields = ('name',)
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Titles.objects.all()
     serializer_class = serializers.TitlesSerializer
-    permission_classes = [IsAdminOrReadOnly, ]
+    permission_classes = [IsAdmin, ]
+    filter_backends = (DjangoFilterBackend,
+                       filters.OrderingFilter,
+                       filters.SearchFilter)
+    filterset_fields = ('name',)
+    ordering_fields = ('name',)
+    search_fields = ('name',)
+
+    def get_permissions(self):
+        # Если в GET-запросе требуется получить информацию об объекте
+        if self.action == 'retrieve':
+            # Вернем обновленный перечень используемых пермишенов
+            return (ReadOnly(),)
+        # Для остальных ситуаций оставим текущий перечень пермишенов без изменений
+        return super().get_permissions()
 
 
 class APISignup(APIView):
     permission_classes = (permissions.AllowAny,)
+
+
+    def post(self, request):
+        serializer = serializers.SignupSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
     def send_code(self, user):
+
             email = user.email
             code = get_random_string(length=5)
             UserCode.objects.filter(user=user).update_or_create(user=user, code=code)
@@ -96,3 +128,4 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(user.role, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
