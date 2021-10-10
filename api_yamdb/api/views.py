@@ -71,8 +71,8 @@ class APISignup(APIView):
         serializer = serializers.SignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
-    def send_code(self, user):
 
+    def send_code(self, user):
             email = user.email
             code = get_random_string(length=5)
             UserCode.objects.filter(user=user).update_or_create(user=user, code=code)
