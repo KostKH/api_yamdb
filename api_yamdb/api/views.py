@@ -1,6 +1,4 @@
-from typing import KeysView
 from django.core.mail import send_mail
-from django.shortcuts import render
 from django.utils.crypto import get_random_string
 from reviews.models import Genre, Categories, Titles, User, UserCode
 from rest_framework import filters, permissions, viewsets, status
@@ -25,6 +23,11 @@ class GenreViewSet(viewsets.ModelViewSet):
     ordering_fields = ('name',)
     search_fields = ('name',)
 
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return (ReadOnly(),)
+        return super().get_permissions()
+
 
 class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
@@ -36,6 +39,11 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     filterset_fields = ('name', 'slug')
     ordering_fields = ('name',)
     search_fields = ('name',)
+
+    def get_permissions(self):
+        if self.request.method == 'GET':
+            return (ReadOnly(),)
+        return super().get_permissions()
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
@@ -50,11 +58,8 @@ class TitlesViewSet(viewsets.ModelViewSet):
     search_fields = ('name',)
 
     def get_permissions(self):
-        # Если в GET-запросе требуется получить информацию об объекте
-        if self.action == 'retrieve':
-            # Вернем обновленный перечень используемых пермишенов
+        if self.request.method == 'GET':
             return (ReadOnly(),)
-        # Для остальных ситуаций оставим текущий перечень пермишенов без изменений
         return super().get_permissions()
 
 

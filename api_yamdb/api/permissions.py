@@ -6,7 +6,6 @@ class ReadOnly(permissions.BasePermission):
         return request.method in permissions.SAFE_METHODS
 
 
-
 class IsAdmin(permissions.BasePermission):
     """
     Allows access only to admin users.
@@ -22,4 +21,3 @@ class IsAdmin(permissions.BasePermission):
             request.user.role == 'admin' or 
             request.user.is_superuser
         )
-
