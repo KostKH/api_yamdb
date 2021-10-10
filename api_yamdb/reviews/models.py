@@ -48,7 +48,7 @@ class Categories(models.Model):
         return self.name
 
 
-class Titles(models.Model):
+class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
     description = models.CharField(max_length=200, default=" ")
@@ -68,8 +68,9 @@ class Titles(models.Model):
 
 class Review(models.Model):
     author = models.ForeignKey(
-        User,
+        'User',
         on_delete=models.CASCADE,
+        related_name='reviews',
         verbose_name='author',
         null=False)
     pub_date = models.DateTimeField(
@@ -80,7 +81,7 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='оценка')
     title = models.ForeignKey(
-        "Titles",
+        "Title",
         blank=True,
         null=True,
         related_name="reviews",
@@ -89,8 +90,20 @@ class Review(models.Model):
         verbose_name='текст оценки',
         help_text='оцените произвидение')
 
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['author', 'title'],
+                name='unique_review')
+        ]
+        verbose_name = 'Отзыв'
+        verbose_name_plural = 'Отзывы'
 
-class Comments(models.Model):
+    def __str__(self):
+        return self.text
+
+
+class Comment(models.Model):
     author = models.ForeignKey(
         "User",
         on_delete=models.CASCADE,
@@ -101,6 +114,7 @@ class Comments(models.Model):
         auto_now_add=True)
     review = models.ForeignKey(
         "Review",
+        related_name='comments',
         blank=True,
         null=True,
         on_delete=models.CASCADE)

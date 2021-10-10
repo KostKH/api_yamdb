@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from reviews.models import Genre, Categories, Titles, User, UserCode, Review
+from reviews.models import Genre, Categories, Title, User, UserCode, Review, Comment
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 import datetime as dt
@@ -25,7 +25,7 @@ class TitlesSerializer(serializers.ModelSerializer):
     categories = CategoriesSerializer(read_only=True)
 
     class Meta:
-        model = Titles
+        model = Title
         fields = '__all__'
 
     def get_rating(self, obj):
@@ -84,3 +84,44 @@ class UserSerializer(serializers.ModelSerializer):
     class Meta:
         model = User
         fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
+
+
+class ReviewSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username',
+        default=serializers.CurrentUserDefault(),
+        read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Review
+
+    def validate(self, data):
+        if self.context['request'].method != 'POST':
+            return data
+
+        title_id = self.context['view'].kwargs.get('title_id')
+        author = self.context['request'].user
+        if Review.objects.filter(
+                author=author, title=title_id).exists():
+            raise serializers.ValidationError(
+                'Вы уже написали отзыв к этому произведению.'
+            )
+        return data
+
+    def validate_score(self, value):
+        if not 1 <= value <= 10:
+            raise serializers.ValidationError(
+                'Можете оценить от 1 до 10.'
+            )
+        return value
+
+
+class CommentSerializer(serializers.ModelSerializer):
+    author = serializers.SlugRelatedField(
+        slug_field='username', read_only=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Comment
+
