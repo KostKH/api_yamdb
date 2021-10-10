@@ -82,6 +82,7 @@ class Review(models.Model):
         "Titles",
         blank=True,
         null=True,
+        related_name="reviews",
         on_delete=models.SET_NULL)
     text = models.TextField(
         verbose_name='текст оценки',
