@@ -40,7 +40,7 @@ class Genre(models.Model):
         return self.name
 
 
-class Categories(models.Model):
+class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
@@ -51,13 +51,16 @@ class Categories(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
-    description = models.CharField(max_length=200, null=True, blank=True)
-    genres = models.ManyToManyField("Genre",
-                                    related_name="titles")
-    categories = models.ForeignKey("Categories",
-                                   on_delete=models.SET_NULL,
-                                   related_name="titles",
-                                   null=True)
+    description = models.CharField(max_length=200,
+                                   null=True,
+                                   blank=True)
+    genre = models.ManyToManyField("Genre",
+                                   related_name="titles")
+    category = models.ForeignKey("Category",
+                                 on_delete=models.SET_NULL,
+                                 related_name="titles",
+                                 blank=True,
+                                 null=True)
 
     class Meta:
         ordering = ["year"]
