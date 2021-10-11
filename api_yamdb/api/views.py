@@ -1,8 +1,8 @@
 from django.core.mail import send_mail
-from django.shortcuts import render, get_object_or_404
+from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from reviews.models import Genre, Categories, Title, User, UserCode, Review, Comment
-from rest_framework import filters, permissions, viewsets, status, pagination
+from reviews.models import Genre, Category, Title, User, UserCode, Review, Comment
+from rest_framework import filters, permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
@@ -10,14 +10,14 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework.decorators import action
 from .permissions import ReadOnly, IsAdmin, IsOwnerOrReadOnly, IsAdminModerator
 from . import serializers
+from .filters import TitleFilter
 from api_yamdb.settings import FROM_EMAIL
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = serializers.GenreSerializer
-    permission_classes = [IsAdmin]
-    pagination_class = pagination.LimitOffsetPagination
+    permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (DjangoFilterBackend,
                        filters.OrderingFilter,
                        filters.SearchFilter)
@@ -36,17 +36,12 @@ class GenreViewSet(viewsets.ModelViewSet):
         genre.delete()
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return (ReadOnly(),)
-        return super().get_permissions()
-
 
 class CategoriesViewSet(viewsets.ModelViewSet):
-    queryset = Categories.objects.all()
-    serializer_class = serializers.CategoriesSerializer
-    permission_classes = [IsAdmin, ]
-    pagination_class = pagination.LimitOffsetPagination
+    queryset = Category.objects.all()
+    serializer_class = serializers.CategorySerializer
+    permission_classes = [IsAdmin | ReadOnly]
+    filter_backends = [DjangoFilterBackend]
     filter_backends = (DjangoFilterBackend,
                        filters.OrderingFilter,
                        filters.SearchFilter)
@@ -61,32 +56,22 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     )
     def get_category(self, request, slug):
         category = self.get_object()
-        serializer = serializers.CategoriesSerializer(category)
+        serializer = serializers.CategorySerializer(category)
         category.delete()
         return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
-
-    def get_permissions(self):
-        if self.request.method == 'GET':
-            return (ReadOnly(),)
-        return super().get_permissions()
 
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
     serializer_class = serializers.TitlesSerializer
-    pagination_class = pagination.LimitOffsetPagination
     permission_classes = [IsAdmin | ReadOnly]
-    filter_backends = (DjangoFilterBackend,
-                       filters.OrderingFilter,
-                       filters.SearchFilter)
-    filterset_fields = ('name',)
-    ordering_fields = ('name',)
-    search_fields = ('name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = TitleFilter
 
-    def get_permissions(self):
+    def get_serializer_class(self):
         if self.request.method == 'GET':
-            return (ReadOnly(),)
-        return super().get_permissions()
+            return serializers.TitleReadSerializer
+        return serializers.TitleSerializer
 
 
 class APISignup(APIView):

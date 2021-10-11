@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from reviews.models import Genre, Categories, Title, User, UserCode, Review, Comment
+from reviews.models import Genre, Category, Title, User, UserCode, Review, Comment
 from django.shortcuts import get_object_or_404
 from rest_framework_simplejwt.tokens import RefreshToken
 import datetime as dt
@@ -12,28 +12,51 @@ class GenreSerializer(serializers.ModelSerializer):
         fields = ('name', 'slug')
 
 
-class CategoriesSerializer(serializers.ModelSerializer):
+class CategorySerializer(serializers.ModelSerializer):
 
     class Meta:
-        model = Categories
+        model = Category
         fields = ('name', 'slug')
 
 
-class TitlesSerializer(serializers.ModelSerializer):
+class TitleReadSerializer(serializers.ModelSerializer):
     rating = serializers.SerializerMethodField()
-    genres = GenreSerializer(many=True, required=False)
-    categories = CategoriesSerializer(read_only=True)
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
+
+    def get_rating(self, obj):
+        scores = [i.score for i in Review.objects.filter(
+            title__id=obj.id)]
+        if len(scores) > 0:
+            return sum(scores) / len(scores)
+        else:
+            return None
 
     class Meta:
         model = Title
         fields = '__all__'
 
-    def get_rating(self, obj):
-        scores = [i.score for i in Review.objects.filter(title__id=obj.id)]
-        if len(scores) > 0:
-            return sum(scores) / len(scores)
-        else:
-            return None
+
+class TitleSerializer(serializers.ModelSerializer):
+    genre = serializers.SlugRelatedField(
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all())
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all())
+
+    class Meta:
+        model = Title
+        fields = '__all__'
+
+    def validate_year(self, value):
+        current_year = dt.datetime.now().year
+        if 0 > value > current_year:
+            raise serializers.ValidationError(
+                'Год выпуска не может быть меньше 0 или больше текущего года!'
+            )
+        return value
 
     def validate_year(self, value):
         current_year = dt.datetime.now().year
