@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from reviews.models import Genre, Category, Title, User, UserCode, Review, Comment
-from rest_framework import filters, permissions, viewsets, status
+from rest_framework import filters, permissions, viewsets, status, pagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
@@ -63,7 +63,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
-    serializer_class = serializers.TitlesSerializer
+    serializer_class = serializers.TitleSerializer
     permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
