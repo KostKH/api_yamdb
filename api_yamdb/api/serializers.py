@@ -20,9 +20,9 @@ class CategorySerializer(serializers.ModelSerializer):
 
 
 class TitleReadSerializer(serializers.ModelSerializer):
-    category = CategorySerializer()
-    genre = GenreSerializer(many=True)
     rating = serializers.SerializerMethodField()
+    genre = GenreSerializer(many=True)
+    category = CategorySerializer()
 
     def get_rating(self, obj):
         scores = [i.score for i in Review.objects.filter(
@@ -38,18 +38,17 @@ class TitleReadSerializer(serializers.ModelSerializer):
 
 
 class TitleSerializer(serializers.ModelSerializer):
-    category = serializers.SlugRelatedField(
-        slug_field='slug', queryset=Category.objects.all()
-    )
     genre = serializers.SlugRelatedField(
-        slug_field='slug', many=True, queryset=Genre.objects.all()
-    )
+        slug_field='slug',
+        many=True,
+        queryset=Genre.objects.all())
+    category = serializers.SlugRelatedField(
+        slug_field='slug',
+        queryset=Category.objects.all())
 
     class Meta:
         model = Title
-        fields = (
-            'id', 'name', 'year', 'description',
-            'genre', 'category',)
+        fields = '__all__'
 
     def validate_year(self, value):
         current_year = dt.datetime.now().year
