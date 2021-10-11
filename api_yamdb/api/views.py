@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import render, get_object_or_404
 from django.utils.crypto import get_random_string
 from reviews.models import Genre, Categories, Title, User, UserCode, Review, Comment
-from rest_framework import filters, permissions, viewsets, status
+from rest_framework import filters, permissions, viewsets, status, pagination
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
@@ -16,7 +16,8 @@ from api_yamdb.settings import FROM_EMAIL
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = serializers.GenreSerializer
-    permission_classes = [IsAdmin, ]
+    permission_classes = [IsAdmin]
+    pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,
                        filters.OrderingFilter,
                        filters.SearchFilter)
@@ -45,6 +46,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Categories.objects.all()
     serializer_class = serializers.CategoriesSerializer
     permission_classes = [IsAdmin, ]
+    pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,
                        filters.OrderingFilter,
                        filters.SearchFilter)
@@ -155,6 +157,7 @@ class UserViewSet(viewsets.ModelViewSet):
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
     permission_classes = [IsAdminModerator | IsOwnerOrReadOnly]
+    pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
         review_id = self.kwargs.get('review_id')
@@ -170,6 +173,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
     permission_classes = [IsAdminModerator | IsOwnerOrReadOnly]
+    pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
         title_id = self.kwargs.get('title_id')

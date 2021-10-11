@@ -51,7 +51,7 @@ class Categories(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
-    description = models.CharField(max_length=200, default=" ")
+    description = models.CharField(max_length=200, null=True, blank=True)
     genres = models.ManyToManyField("Genre",
                                     related_name="titles")
     categories = models.ForeignKey("Categories",
