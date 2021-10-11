@@ -2,7 +2,7 @@ from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
 from reviews.models import Genre, Category, Title, User, UserCode, Review, Comment
-from rest_framework import filters, permissions, viewsets, status, pagination
+from rest_framework import filters, permissions, viewsets, status
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
@@ -63,6 +63,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
 
 class TitlesViewSet(viewsets.ModelViewSet):
     queryset = Title.objects.all()
+    serializer_class = serializers.TitlesSerializer
     permission_classes = [IsAdmin | ReadOnly]
     filter_backends = (DjangoFilterBackend,)
     filterset_class = TitleFilter
@@ -123,20 +124,16 @@ class UserViewSet(viewsets.ModelViewSet):
             return Response(serializer.data, status=status.HTTP_200_OK)
 
         serializer = self.get_serializer(user, data=request.data, partial=True)
-        try:
-            current_role = user.role
-            new_role = request.data['role']
-        except:
-            if serializer.is_valid():
-                serializer.save()
-                return Response(user.role, status=status.HTTP_200_OK)
-            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        if current_role == 'user' and new_role != 'user':
-            return Response('нет прав на смену роли', status=status.HTTP_400_BAD_REQUEST)
         if serializer.is_valid():
+            try:
+                current_role = user.role
+                new_role = serializer.validated_data['role']
+                if current_role == 'user' and new_role != 'user':
+                    serializer.validated_data['role'] = 'user'
+            except:
+                pass
             serializer.save()
-            return Response(user.role, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response(serializer.data, status=status.HTTP_200_OK)
 
 
 class CommentViewSet(viewsets.ModelViewSet):
