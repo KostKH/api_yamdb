@@ -17,4 +17,3 @@ class TitleFilter(filters.FilterSet):
             'year',
             'name',
         )
-

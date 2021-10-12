@@ -1,21 +1,20 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from rest_framework import \
-    filters, permissions, viewsets, status, pagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, pagination, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
-from django_filters.rest_framework import DjangoFilterBackend
+from reviews.models import Category, Genre, Review, Title, User, UserCode
 
 from api_yamdb.settings import FROM_EMAIL
-from rest_framework.decorators import action
-from reviews.models import \
-    Genre, Category, Title, User, UserCode, Review, Comment
-from .permissions import \
-    ReadOnly, IsAdmin, IsOwnerOrReadOnly, IsAdminOrModerator
+
 from . import serializers
 from .filters import TitleFilter
+from .permissions import (IsAdmin, IsAdminOrModerator, IsOwnerOrReadOnly,
+                          ReadOnly)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
@@ -136,7 +135,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 new_role = serializer.validated_data['role']
                 if current_role == 'user' and new_role != 'user':
                     serializer.validated_data['role'] = 'user'
-            except:
+            except Exception:
                 pass
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)

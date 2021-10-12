@@ -7,19 +7,15 @@ class ReadOnly(permissions.BasePermission):
 
 
 class IsAdmin(permissions.BasePermission):
-    """
-    Allows access only to admin users.
-    """
-
     def has_permission(self, request, view):
         if not request.user:
             return False
         if not request.user.is_authenticated:
             return False
         return bool(
-            request.user.is_staff or 
-            request.user.role == 'admin' or 
-            request.user.is_superuser
+            request.user.is_staff
+            or request.user.role == 'admin'
+            or request.user.is_superuser
         )
 
 
