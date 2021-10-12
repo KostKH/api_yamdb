@@ -1,9 +1,10 @@
-from rest_framework import serializers
-from reviews.models import \
-    Genre, Category, Title, User, UserCode, Review, Comment
-from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
 import datetime as dt
+
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+from reviews.models import (Category, Comment, Genre, Review, Title, User,
+                            UserCode)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -87,14 +88,14 @@ class GetTokenSerializer(serializers.Serializer):
         if not code.code:
             raise serializers.ValidationError(
                 'Пользователь не запрашивал код')
-        
+
         elif code.code != data['confirmation_code']:
             raise serializers.ValidationError(
                 f'Вы отправили неправильный код'
                 f'{data["confirmation_code"]},{code.code}')
-        
+
         token = self.get_token(user)
-        return {'token': str(token.access_token),}
+        return {'token': str(token.access_token), }
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -103,7 +104,7 @@ class UserSerializer(serializers.ModelSerializer):
         model = User
         fields = (
             'username', 'email', 'first_name', 'last_name', 'bio', 'role')
-    
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -136,4 +137,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Comment
-
