@@ -2,8 +2,6 @@ from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
 from django.db import models
 
-from django.utils.translation import gettext_lazy as _
-
 
 class User(AbstractUser):
     USER = 'user'
@@ -21,20 +19,44 @@ class User(AbstractUser):
         default=USER,
         max_length=9
     )
-    email = models.EmailField(_('email address'), blank=False, unique=True, max_length=254)
-    first_name = models.CharField(_('first name'), max_length=150, blank=True)
+    email = models.EmailField(
+        verbose_name='email address',
+        unique=True,
+        max_length=254)
+    first_name = models.CharField(
+        verbose_name='first name',
+        max_length=150,
+        blank=True)
     bio = models.TextField(blank=True, null=True)
 
     class Meta:
         ordering = ['-id']
-    
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
+
     def __str__(self):
         return self.username
+
+    @property
+    def is_admin(self):
+        return bool(self.role == self.ADMIN)
+
+    @property
+    def is_moderator(self):
+        return bool(self.role == self.MODERATOR)
+
+    @property
+    def is_user(self):
+        return bool(self.role == self.USER)
 
 
 class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
 
     def __str__(self):
         return self.name
@@ -44,6 +66,10 @@ class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
+
     def __str__(self):
         return self.name
 
@@ -51,19 +77,24 @@ class Category(models.Model):
 class Title(models.Model):
     name = models.CharField(max_length=200)
     year = models.IntegerField()
-    description = models.CharField(max_length=200,
-                                   null=True,
-                                   blank=True)
-    genre = models.ManyToManyField("Genre",
-                                   related_name="titles")
-    category = models.ForeignKey("Category",
-                                 on_delete=models.SET_NULL,
-                                 related_name="titles",
-                                 blank=True,
-                                 null=True)
+    description = models.CharField(
+        max_length=200,
+        null=True,
+        blank=True)
+    genre = models.ManyToManyField(
+        'Genre',
+        related_name='titles')
+    category = models.ForeignKey(
+        'Category',
+        on_delete=models.SET_NULL,
+        related_name='titles',
+        blank=True,
+        null=True)
 
     class Meta:
-        ordering = ["year"]
+        ordering = ['year']
+        verbose_name = 'Название произведения'
+        verbose_name_plural = 'Названия произведений'
 
     def __str__(self):
         return self.name
@@ -84,10 +115,10 @@ class Review(models.Model):
         validators=[MinValueValidator(1), MaxValueValidator(10)],
         verbose_name='оценка')
     title = models.ForeignKey(
-        "Title",
+        'Title',
         blank=True,
         null=True,
-        related_name="reviews",
+        related_name='reviews',
         on_delete=models.SET_NULL)
     text = models.TextField(
         verbose_name='текст оценки',
@@ -108,7 +139,7 @@ class Review(models.Model):
 
 class Comment(models.Model):
     author = models.ForeignKey(
-        "User",
+        'User',
         on_delete=models.CASCADE,
         verbose_name='author',
         null=False)
@@ -116,7 +147,7 @@ class Comment(models.Model):
         verbose_name='Дата публикации',
         auto_now_add=True)
     review = models.ForeignKey(
-        "Review",
+        'Review',
         related_name='comments',
         blank=True,
         null=True,
@@ -125,12 +156,15 @@ class Comment(models.Model):
         verbose_name='текст коментария',
         help_text='добавьте коментарий')
 
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
+
 
 class UserCode(models.Model):
-        user = models.ForeignKey(
+    user = models.ForeignKey(
         User,
         on_delete=models.CASCADE,
         related_name='user_code'
-        )
-        code = models.CharField(max_length=5)
-
+    )
+    code = models.CharField(max_length=5)

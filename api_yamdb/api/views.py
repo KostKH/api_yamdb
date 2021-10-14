@@ -1,23 +1,28 @@
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
 from django.utils.crypto import get_random_string
-from reviews.models import Genre, Category, Title, User, UserCode, Review, Comment
-from rest_framework import filters, permissions, viewsets, status, pagination
+from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework import filters, pagination, permissions, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
-from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import action
-from .permissions import ReadOnly, IsAdmin, IsOwnerOrReadOnly, IsAdminModerator
+
+from reviews.models import Category, Genre, Review, Title, User, UserCode
+
+from api_yamdb.settings import FROM_EMAIL
+
 from . import serializers
 from .filters import TitleFilter
-from api_yamdb.settings import FROM_EMAIL
+from .permissions import (IsAdmin, IsAdminOrModerator, IsOwnerOrReadOnly,
+                          ReadOnly)
 
 
 class GenreViewSet(viewsets.ModelViewSet):
     queryset = Genre.objects.all()
     serializer_class = serializers.GenreSerializer
     permission_classes = [IsAdmin | ReadOnly]
+    pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,
                        filters.OrderingFilter,
                        filters.SearchFilter)
@@ -41,7 +46,7 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     queryset = Category.objects.all()
     serializer_class = serializers.CategorySerializer
     permission_classes = [IsAdmin | ReadOnly]
-    filter_backends = [DjangoFilterBackend]
+    pagination_class = pagination.LimitOffsetPagination
     filter_backends = (DjangoFilterBackend,
                        filters.OrderingFilter,
                        filters.SearchFilter)
@@ -80,7 +85,8 @@ class APISignup(APIView):
     def send_code(self, user):
         email = user.email
         code = get_random_string(length=5)
-        UserCode.objects.filter(user=user).update_or_create(user=user, code=code)
+        UserCode.objects.filter(user=user).update_or_create(
+            user=user, code=code)
         send_mail(
             'YamDB - код подтверждения',
             f'Ваш код подтверждения:{code}',
@@ -114,7 +120,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(methods=['patch', 'get'],
             detail=False,
-            permission_classes=[permissions.IsAuthenticated, ],
+            permission_classes=[permissions.IsAuthenticated],
             url_path='me', url_name='me')
     def me(self, request):
         user = request.user
@@ -130,7 +136,7 @@ class UserViewSet(viewsets.ModelViewSet):
                 new_role = serializer.validated_data['role']
                 if current_role == 'user' and new_role != 'user':
                     serializer.validated_data['role'] = 'user'
-            except:
+            except Exception:
                 pass
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
@@ -138,7 +144,7 @@ class UserViewSet(viewsets.ModelViewSet):
 
 class CommentViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.CommentSerializer
-    permission_classes = [IsAdminModerator | IsOwnerOrReadOnly]
+    permission_classes = [IsAdminOrModerator | IsOwnerOrReadOnly]
     pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):
@@ -154,7 +160,7 @@ class CommentViewSet(viewsets.ModelViewSet):
 
 class ReviewViewSet(viewsets.ModelViewSet):
     serializer_class = serializers.ReviewSerializer
-    permission_classes = [IsAdminModerator | IsOwnerOrReadOnly]
+    permission_classes = [IsAdminOrModerator | IsOwnerOrReadOnly]
     pagination_class = pagination.LimitOffsetPagination
 
     def get_queryset(self):

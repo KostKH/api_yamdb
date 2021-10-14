@@ -1,8 +1,11 @@
-from rest_framework import serializers
-from reviews.models import Genre, Category, Title, User, UserCode, Review, Comment
-from django.shortcuts import get_object_or_404
-from rest_framework_simplejwt.tokens import RefreshToken
 import datetime as dt
+
+from django.shortcuts import get_object_or_404
+from rest_framework import serializers
+from rest_framework_simplejwt.tokens import RefreshToken
+
+from reviews.models import (Category, Comment, Genre, Review, Title, User,
+                            UserCode)
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -58,14 +61,6 @@ class TitleSerializer(serializers.ModelSerializer):
             )
         return value
 
-    def validate_year(self, value):
-        current_year = dt.datetime.now().year
-        if 0 > value > current_year:
-            raise serializers.ValidationError(
-                'Год выпуска не может быть меньше 0 или больше текущего года!'
-            )
-        return value
-
 
 class SignupSerializer(serializers.ModelSerializer):
 
@@ -76,7 +71,8 @@ class SignupSerializer(serializers.ModelSerializer):
     def validate(self, data):
         if data['username'] == 'me':
             raise serializers.ValidationError(
-                'Username "me" использовать запрещено. Придумайте другой username')
+                'Username "me" использовать запрещено. '
+                'Придумайте другой username')
         return data
 
 
@@ -93,21 +89,23 @@ class GetTokenSerializer(serializers.Serializer):
         if not code.code:
             raise serializers.ValidationError(
                 'Пользователь не запрашивал код')
-        
+
         elif code.code != data['confirmation_code']:
             raise serializers.ValidationError(
-                f'Вы отправили неправильный код{data["confirmation_code"]},{code.code}')
-        
+                f'Вы отправили неправильный код'
+                f'{data["confirmation_code"]},{code.code}')
+
         token = self.get_token(user)
-        return {'token': str(token.access_token),}
+        return {'token': str(token.access_token), }
 
 
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
-        fields = ('username', 'email', 'first_name', 'last_name', 'bio', 'role')
-    
+        fields = (
+            'username', 'email', 'first_name', 'last_name', 'bio', 'role')
+
 
 class ReviewSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -132,13 +130,6 @@ class ReviewSerializer(serializers.ModelSerializer):
             )
         return data
 
-    def validate_score(self, value):
-        if not 1 <= value <= 10:
-            raise serializers.ValidationError(
-                'Можете оценить от 1 до 10.'
-            )
-        return value
-
 
 class CommentSerializer(serializers.ModelSerializer):
     author = serializers.SlugRelatedField(
@@ -147,4 +138,3 @@ class CommentSerializer(serializers.ModelSerializer):
     class Meta:
         fields = '__all__'
         model = Comment
-
