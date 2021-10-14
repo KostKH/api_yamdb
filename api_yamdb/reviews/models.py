@@ -21,7 +21,6 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         verbose_name='email address',
-        blank=False,
         unique=True,
         max_length=254)
     first_name = models.CharField(
@@ -32,9 +31,23 @@ class User(AbstractUser):
 
     class Meta:
         ordering = ['-id']
+        verbose_name = 'Пользователь'
+        verbose_name_plural = 'Пользователи'
 
     def __str__(self):
         return self.username
+
+    @property
+    def is_admin(self):
+        return bool(self.role == self.ADMIN)
+
+    @property
+    def is_moderator(self):
+        return bool(self.role == self.MODERATOR)
+
+    @property
+    def is_user(self):
+        return bool(self.role == self.USER)
 
 
 class Genre(models.Model):
@@ -132,6 +145,7 @@ class Comment(models.Model):
     text = models.TextField(
         verbose_name='текст коментария',
         help_text='добавьте коментарий')
+
 
 
 class UserCode(models.Model):
