@@ -92,6 +92,16 @@ class APISignup(APIView):
         )
 
     def post(self, request):
+        try:
+            existing_user = User.objects.get(
+                username=request.data['username'],
+                email=request.data['email']
+            )
+            if existing_user:
+                self.send_code(existing_user)
+                return Response(request.data, status=status.HTTP_200_OK)
+        except Exception:
+            pass
         serializer = serializers.SignupSerializer(data=request.data)
         if serializer.is_valid():
             user = serializer.save()
