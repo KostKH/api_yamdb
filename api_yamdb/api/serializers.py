@@ -1,12 +1,12 @@
 import datetime as dt
 
+from django.contrib.auth.tokens import default_token_generator
 from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
 
-from reviews.models import (Category, Comment, Genre, Review, Title, User,
-                            UserCode)
+from reviews.models import Category, Comment, Genre, Review, Title, User
 
 
 class GenreSerializer(serializers.ModelSerializer):
@@ -76,22 +76,20 @@ class SignupSerializer(serializers.ModelSerializer):
 
 class GetTokenSerializer(serializers.Serializer):
     username = serializers.CharField()
-    confirmation_code = serializers.CharField(max_length=5)
+    confirmation_code = serializers.CharField()
 
     def get_token(self, user):
         return RefreshToken.for_user(user)
 
     def validate(self, data):
         user = get_object_or_404(User, username=data['username'])
-        code = get_object_or_404(UserCode, user=user)
-        if not code.code:
+        code = default_token_generator.check_token(
+            user,
+            data['confirmation_code']
+        )
+        if code is False:
             raise serializers.ValidationError(
-                'Пользователь не запрашивал код')
-
-        elif code.code != data['confirmation_code']:
-            raise serializers.ValidationError(
-                f'Вы отправили неправильный код'
-                f'{data["confirmation_code"]},{code.code}')
+                'Вы отправили неправильный код')
 
         token = self.get_token(user)
         return {'token': str(token.access_token), }
