@@ -1,6 +1,6 @@
+from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.shortcuts import get_object_or_404
-from django.utils.crypto import get_random_string
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, pagination, permissions, status, viewsets
 from rest_framework.decorators import action
@@ -8,9 +8,8 @@ from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework_simplejwt.views import TokenViewBase
 
-from reviews.models import Category, Genre, Review, Title, User, UserCode
-
 from api_yamdb.settings import FROM_EMAIL
+from reviews.models import Category, Genre, Review, Title, User
 
 from . import serializers
 from .filters import TitleFilter
@@ -84,9 +83,7 @@ class APISignup(APIView):
 
     def send_code(self, user):
         email = user.email
-        code = get_random_string(length=5)
-        UserCode.objects.filter(user=user).update_or_create(
-            user=user, code=code)
+        code = default_token_generator.make_token(user)
         send_mail(
             'YamDB - код подтверждения',
             f'Ваш код подтверждения:{code}',
