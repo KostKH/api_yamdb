@@ -54,6 +54,10 @@ class Genre(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
 
+    class Meta:
+        verbose_name = 'Жанр'
+        verbose_name_plural = 'Жанры'
+
     def __str__(self):
         return self.name
 
@@ -61,6 +65,10 @@ class Genre(models.Model):
 class Category(models.Model):
     name = models.CharField(max_length=256)
     slug = models.SlugField(max_length=50, unique=True)
+
+    class Meta:
+        verbose_name = 'Категория'
+        verbose_name_plural = 'Категории'
 
     def __str__(self):
         return self.name
@@ -85,6 +93,8 @@ class Title(models.Model):
 
     class Meta:
         ordering = ['year']
+        verbose_name = 'Название произведения'
+        verbose_name_plural = 'Названия произведений'
 
     def __str__(self):
         return self.name
@@ -146,6 +156,9 @@ class Comment(models.Model):
         verbose_name='текст коментария',
         help_text='добавьте коментарий')
 
+    class Meta:
+        verbose_name = 'Комментарий'
+        verbose_name_plural = 'Комментарии'
 
 
 class UserCode(models.Model):
