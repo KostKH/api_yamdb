@@ -56,8 +56,8 @@ class CategoriesViewSet(viewsets.ModelViewSet):
     @action(
         detail=False, methods=['delete'],
         url_path=r'(?P<slug>\w+)',
-        lookup_field='slug', url_name='category_slug'
-    )
+        lookup_field='slug', url_name='category_slug')
+
     def get_category(self, request, slug):
         category = self.get_object()
         serializer = serializers.CategorySerializer(category)

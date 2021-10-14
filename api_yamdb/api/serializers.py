@@ -1,6 +1,7 @@
 import datetime as dt
 
 from django.contrib.auth.tokens import default_token_generator
+from django.db.models import Avg
 from django.shortcuts import get_object_or_404
 from rest_framework import serializers
 from rest_framework_simplejwt.tokens import RefreshToken
@@ -28,12 +29,9 @@ class TitleReadSerializer(serializers.ModelSerializer):
     category = CategorySerializer()
 
     def get_rating(self, obj):
-        scores = [i.score for i in Review.objects.filter(
-            title__id=obj.id)]
-        if len(scores) > 0:
-            return sum(scores) / len(scores)
-        else:
-            return None
+        return Review.objects.filter(title__id=obj.id
+                                     ).aggregate(rating=Avg('score')
+                                                 ).get('rating')
 
     class Meta:
         model = Title
