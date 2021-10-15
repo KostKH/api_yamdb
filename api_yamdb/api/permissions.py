@@ -12,11 +12,9 @@ class IsAdmin(permissions.BasePermission):
             return False
         if not request.user.is_authenticated:
             return False
-        return bool(
-            request.user.is_staff
-            or request.user.is_admin
-            or request.user.is_superuser
-        )
+        return (request.user.is_staff
+                or request.user.is_admin
+                or request.user.is_superuser)
 
 
 class IsAdminOrModerator(permissions.BasePermission):

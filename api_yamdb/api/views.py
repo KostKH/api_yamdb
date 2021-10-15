@@ -97,18 +97,21 @@ class APISignup(APIView):
                 username=request.data['username'],
                 email=request.data['email']
             )
-            if existing_user:
-                self.send_code(existing_user)
-                return Response(request.data, status=status.HTTP_200_OK)
-        except Exception:
-            pass
-        serializer = serializers.SignupSerializer(data=request.data)
-        if serializer.is_valid():
-            user = serializer.save()
-            self.send_code(user)
-            return Response(serializer.data, status=status.HTTP_200_OK)
+            if not existing_user:
+                raise Exception
+            self.send_code(existing_user)
+            return Response(request.data, status=status.HTTP_200_OK)
 
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        except Exception:
+            serializer = serializers.SignupSerializer(data=request.data)
+            if serializer.is_valid():
+                user = serializer.save()
+                self.send_code(user)
+                return Response(serializer.data, status=status.HTTP_200_OK)
+            return Response(
+                serializer.errors,
+                status=status.HTTP_400_BAD_REQUEST
+            )
 
 
 class GetTokenView(TokenViewBase):
