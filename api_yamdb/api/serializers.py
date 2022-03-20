@@ -66,12 +66,12 @@ class SignupSerializer(serializers.ModelSerializer):
         model = User
         fields = ('email', 'username')
 
-    def validate(self, data):
-        if data['username'] == 'me':
+    def validate_username(self, value):
+        if value == 'me':
             raise serializers.ValidationError(
                 'Username "me" использовать запрещено. '
                 'Придумайте другой username')
-        return data
+        return value
 
 
 class GetTokenSerializer(serializers.Serializer):
