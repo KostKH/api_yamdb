@@ -57,12 +57,12 @@ python manage.py runserver
 
 ## Примеры
 
-###Авторизация пользователей:
+### Авторизация пользователей:
 ```
 /api/v1/auth/signup/ - регистрация пользователя (POST)
 /api/v1/auth/token/ - ввод полученного токена (POST)
 ```
-###Работа с категориями, жанрами:
+### Работа с категориями, жанрами:
 ```
 /api/v1/categories/ - просмотр (GET), создание (POST) категорий 
 /api/v1/categories/{slug}/ - удаление категории (DELETE)
@@ -71,13 +71,15 @@ python manage.py runserver
 /api/v1/titles/ - просмотр (GET), создание (POST) записи о произведении
 /api/v1/titles/{titles_id}/ - управление произведением (GET, PATCH, DELETE)
 ```
-###Работа с обзорами и комментариями:
+### Работа с обзорами и комментариями:
+```
 /api/v1/titles/{title_id}/reviews/ - просмотр (GET), создание (POST) обзоров
 /api/v1/titles/{title_id}/reviews/{review_id}/  - управление обзором (GET, PATCH, DELETE)
 /api/v1/titles/{title_id}/reviews/{review_id}/comments/ - просмотр (GET), создание (POST) комментариев
 /api/v1/titles/{title_id}/reviews/{review_id}/comments/{comment_id}/  - управление комментарием (GET, PATCH, DELETE)
 ```
-###Работа с базой пользователей:
+#### Работа с базой пользователей:
+```
 /api/v1/users/ - просмотр (GET), создание (POST) пользователей
 /api/v1/users/{username}/ - управление пользователем (GET, PATCH, DELETE)
 /api/v1/users/me/ - просмотр или изменение пользователем своих данных  (GET, PATCH)
